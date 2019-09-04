@@ -4,21 +4,37 @@ public class Events {
 	public Events() {
 		super();
 	}
-	private int eventId;
+	private String eventId;
 	private String eventName;
 	private String eventAddress;
 	private String eventDate;
-	public Events(int eventId, String eventName, String eventAddress, String eventDate) {
+	private String username;
+	private String eventMsg;
+	public String getEventMsg() {
+		return eventMsg;
+	}
+	public void setEventMsg(String eventMsg) {
+		this.eventMsg = eventMsg;
+	}
+	public Events(String eventId, String eventName, String eventAddress, String eventDate, String username, String eventMsg) {
 		super();
 		this.eventId = eventId;
 		this.eventName = eventName;
 		this.eventAddress = eventAddress;
 		this.eventDate = eventDate;
+		this.username = username;
+		this.eventMsg = eventMsg;
 	}
-	public int getEventId() {
+	public String getUsername() {
+		return username;
+	}
+	public void setUsername(String username) {
+		this.username = username;
+	}
+	public String getEventId() {
 		return eventId;
 	}
-	public void setEventId(int eventId) {
+	public void setEventId(String eventId) {
 		this.eventId = eventId;
 	}
 	public String getEventName() {

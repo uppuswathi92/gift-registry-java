@@ -9,4 +9,5 @@ public interface UserDao {
 	boolean userExists(String username, String email);
 	RegistryUser getUserByUsername(String username);
 	RegistryUser getUserByEmail(String email);
+	List<RegistryUser> getUsers();
 }

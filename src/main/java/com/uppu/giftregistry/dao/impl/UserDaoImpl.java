@@ -83,5 +83,22 @@ public class UserDaoImpl extends JdbcDaoSupport implements UserDao {
 		return null;
 	}
 
+	public List<RegistryUser> getUsers() {
+		String sql = "SELECT * FROM registryUser";
+		List<Map<String, Object>> rows = getJdbcTemplate().queryForList(sql);
+		
+		List<RegistryUser> result = new ArrayList<RegistryUser>();
+		for(Map<String, Object> row:rows){
+			RegistryUser user = new RegistryUser();
+			user.setUsername((String)row.get("username"));
+			user.setEmail((String)row.get("email"));
+			user.setFirstName((String)row.get("firstName"));
+			user.setLastName((String)row.get("lastName"));
+			result.add(user);
+		}
+		
+		return result;
+	}
+
 }
 

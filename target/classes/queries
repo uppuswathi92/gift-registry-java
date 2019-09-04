@@ -1,0 +1,11 @@
+delete from demo.invitees where eventId='29746';
+SET SQL_SAFE_UPDATES = 0;
+ALTER TABLE demo.events ADD COLUMN eventLocation varchar(45);
+ALTER TABLE demo.events DROP COLUMN eventLocation;
+
+INSERT INTO demo.invitees VALUES(123,'user2',0);
+INSERT INTO demo.registryuser VALUES('user2','user2','user2firstname','user2lastname','user2@gmail.com','9130253422');
+INSERT into demo.invitees (eventId, inviteeName, isHost) VALUES('56629', 'user1', 0);
+SET SQL_SAFE_UPDATES = 0;
+UPDATE demo.products set isPurchased = 0, purchasedBy=null where productId = '64893';
+update demo.inviteed set notified='no' where isHost=0;

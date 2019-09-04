@@ -1,7 +1,9 @@
 package com.uppu.giftregistry.controller;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -12,9 +14,13 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.uppu.giftregistry.model.Invitee;
 import com.uppu.giftregistry.model.RegistryUser;
+import com.uppu.giftregistry.service.InviteeService;
 import com.uppu.giftregistry.service.LoginService;
 import com.uppu.giftregistry.service.RegistryUserService;
 
@@ -27,11 +33,17 @@ public class RegistryController {
 	RegistryUserService userService;
 	@Autowired
 	LoginService loginService;
+	@Autowired
+	InviteeService inviteeService;
 	private List<RegistryUser> users = createList();
 
 	@GetMapping(produces = "application/json")
-	public List<RegistryUser> firstPage() {
-		return users;
+	public HashMap<String, Object> getUsers() {
+		HashMap<String, Object> userDetails = new HashMap<String, Object>();
+		List<RegistryUser> users = userService.getUsers();
+		userDetails.put("service", "getUsers");
+		userDetails.put("results", users);
+		return userDetails;
 	}
 
 	@DeleteMapping(path = { "/{username}" })
@@ -55,11 +67,26 @@ public class RegistryController {
 	}
 	
 	@GetMapping(path = { "/{username}/{password}" })
-	public boolean login(@PathVariable("username") String username, @PathVariable("password") String password) {
-		return loginService.login(username, password);
+	public HashMap<String, Object> login(@PathVariable("username") String username, @PathVariable("password") String password) {
+		HashMap<String, Object> userDetails = new HashMap<String, Object>();
+		userDetails.put("service", "login");
+		String loggedIn = loginService.login(username, password);
+		userDetails.put("results", loggedIn);
+		return userDetails;
+	}
+	
+	@RequestMapping(value="/addInvitee",method = RequestMethod.GET) 
+	public HashMap<String, Object> addInvitee(@RequestParam(value="eventId") String eventId, @RequestParam(value="username") String username) {
+		HashMap<String, Object> addInvitees = new HashMap<String, Object>();
+		inviteeService.addInvitee(eventId, username, false);
+		addInvitees.put("service", "addInvitees");
+		addInvitees.put("results", null);
+		return addInvitees;
+		//System.out.println(idNumber);
+		//return null;
 	}
 	private static List<RegistryUser> createList() {
-		System.out.println("here");
+		
 		List<RegistryUser> tempUsers = new ArrayList<RegistryUser>();
 		RegistryUser user1 = new RegistryUser();
 		user1.setUsername("user1");

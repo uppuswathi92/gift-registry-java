@@ -27,13 +27,13 @@ public class LoginDaoImpl extends JdbcDaoSupport implements LoginDao{
 		setDataSource(dataSource);
 		setJdbcTemplate(jdbcTemplate);
 	}
-	public boolean login(String username, String password) {
-		System.out.println(username);
+	public String login(String username, String password) {
+		//System.out.println(username);
 		String loginSql = "select * from registryuser where username='"+username + "' and password= '" + password+"'";
 		List<Map<String, Object>> rows = getJdbcTemplate().queryForList(loginSql);
 		if(rows.size() == 1) {
-			return true;
+			return "success";
 		}
-		return false;
+		return "failure";
 	}
 }

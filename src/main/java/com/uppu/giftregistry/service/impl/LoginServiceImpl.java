@@ -12,7 +12,7 @@ public class LoginServiceImpl implements LoginService{
 	
 	@Autowired
 	LoginDao loginDao;
-	public boolean login(String username, String password) {
+	public String login(String username, String password) {
 		return loginDao.login(username, password);
 	}
 
