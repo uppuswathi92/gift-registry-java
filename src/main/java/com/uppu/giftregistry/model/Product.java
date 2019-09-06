@@ -1,5 +1,9 @@
 package com.uppu.giftregistry.model;
 
+import org.springframework.web.multipart.MultipartFile;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 public class Product {
 	private String productId;
 	private String productColor;
@@ -8,6 +12,7 @@ public class Product {
 	private boolean isPurchased;
 	private String purchasedBy;
 	private String eventId;
+	private String productImage;
 	public Product() {
 		super();
 		// TODO Auto-generated constructor stub
@@ -22,6 +27,12 @@ public class Product {
 	public String getEventId() {
 		return eventId;
 	}
+	public String getProductImage() {
+		return productImage;
+	}
+	public void setProductImage(String productImage) {
+		this.productImage = productImage;
+	}
 	public void setEventId(String eventId) {
 		this.eventId = eventId;
 	}
@@ -35,6 +46,18 @@ public class Product {
 		this.isPurchased = isPurchased;
 		this.purchasedBy = purchasedBy;
 		this.eventId = eventId;
+	}
+	public Product(String productId, String productColor, String productLink, String productName, boolean isPurchased,
+			String purchasedBy, String eventId, String productImage) {
+		super();
+		this.productId = productId;
+		this.productColor = productColor;
+		this.productLink = productLink;
+		this.productName = productName;
+		this.isPurchased = isPurchased;
+		this.purchasedBy = purchasedBy;
+		this.eventId = eventId;
+		this.productImage = productImage;
 	}
 	public String getProductId() {
 		return productId;

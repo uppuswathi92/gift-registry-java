@@ -1,5 +1,6 @@
 package com.uppu.giftregistry.controller;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 
@@ -13,7 +14,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.uppu.giftregistry.model.Events;
 import com.uppu.giftregistry.model.Product;
@@ -31,8 +34,26 @@ public class ProductsController {
 	public HashMap<String, Object> addProduct(@RequestBody Product product) {
 		HashMap<String, Object> productDetails = new HashMap<String, Object>();
 		productDetails.put("service", "addProduct");
-		productsService.addProduct(product);
-		productDetails.put("results", product);
+		String productId = productsService.addProduct(product);
+		productDetails.put("results", productId);
+		return productDetails;
+	}
+	
+	@RequestMapping(method = RequestMethod.POST, path = "uploadImage/{productId}")
+	public HashMap<String, Object> uploadImage(@PathVariable String productId, @RequestParam("myFile") MultipartFile file) {
+		HashMap<String, Object> productDetails = new HashMap<String, Object>();
+		productDetails.put("service", "uploadImage");
+		try {
+			System.out.println(productId);
+			//System.out.println(file.getBytes());
+			//System.out.println(file.getOriginalFilename());
+			productsService.uploadImage(productId, file.getBytes());
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		productDetails.put("results", productId);
+		//
 		return productDetails;
 	}
 	@GetMapping(path = { "/getProducts/{eventId}" })

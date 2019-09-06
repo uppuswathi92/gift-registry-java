@@ -46,4 +46,9 @@ public class ProductsServiceImpl implements ProductsService{
 		// TODO Auto-generated method stub
 		return productsDao.deleteProductById(productId);
 	}
+
+	public String uploadImage(String productId, byte[] fileBytes) {
+		// TODO Auto-generated method stub
+		return productsDao.uploadImage(productId, fileBytes);
+	}
 }

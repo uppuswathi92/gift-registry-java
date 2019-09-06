@@ -12,4 +12,5 @@ public interface ProductsService {
 	String purchaseProduct(String productId, String username, String eventId);
 	String deleteProductByEvent(String eventId);
 	boolean deleteProductById(String productId);
+	String uploadImage(String productId, byte[] fileBytes);
 }

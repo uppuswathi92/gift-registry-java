@@ -1,16 +1,25 @@
 package com.uppu.giftregistry.dao.impl;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeMessage;
 import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.support.JdbcDaoSupport;
+import org.springframework.mail.MailParseException;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Repository;
 
 import com.uppu.giftregistry.dao.EventsDao;
@@ -31,6 +40,8 @@ public class EventsDaoImpl extends JdbcDaoSupport implements EventsDao {
 	InviteeService inviteeService;
 	@Autowired
 	ProductsService productsService;
+	@Autowired
+    private JavaMailSender mailSender;
 	@PostConstruct
 	private void initialize(){
 		setDataSource(dataSource);
@@ -109,7 +120,53 @@ public class EventsDaoImpl extends JdbcDaoSupport implements EventsDao {
 		int[] types = {Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR};
 		int rows = getJdbcTemplate().update(updateSql, params, types);
 		//System.out.println(rows + " row(s) updated.");
+		sendEventUpdateEmail(event.getEventId());
 		return null;
+	}
+	
+	public void sendEventUpdateEmail(String eventId) {
+		 String result =null;
+		    MimeMessage message =mailSender.createMimeMessage();
+		    try {
+		        MimeMessageHelper helper = new MimeMessageHelper(message, false, "utf-8");
+		        String header = "";
+		        String footer = "";
+		        String htmlMsg = "";
+		        String redirectUrl = "http://localhost:4200/viewevent?eventId="+eventId + "&event=other";
+		        String content = "<div align='center' style='line-height: 24px;'>";
+		        content += "<a href='"+redirectUrl + "' target='_blank' class='btn btn-primary block-center'>";
+		        content += "Click here to check it out!\r\n" + 
+		        		"    </a>\r\n" + 
+		        		"</div>\r\n" + 
+		        		"<div style='height: 60px; line-height: 60px; font-size: 10px;'></div>";
+		        /*String content = "<div align=\"center\" style=\"line-height: 24px;\">\r\n" + 
+		        		"                                                        <a href=\"#\" target=\"_blank\" class=\"btn btn-danger block-center\">\r\n" + 
+		        		"                                                            click\r\n" + 
+		        		"                                                        </a>\r\n" + 
+		        		"                                                    </div>\r\n" + 
+		        		"                                                    <div style=\"height: 60px; line-height: 60px; font-size: 10px;\"></div>";*/
+				try {
+					File file = new ClassPathResource("templates/email/header-template.html").getFile();
+					header = new String(Files.readAllBytes(file.toPath()));
+					file = new ClassPathResource("templates/email/footer-template.html").getFile();
+					footer = new String(Files.readAllBytes(file.toPath()));
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				htmlMsg = header + content + footer; 
+		        message.setContent(htmlMsg, "text/html");
+		        helper.setTo("uppuswathi92@gmail.com");
+		        helper.setSubject("subject");
+		        result="success";
+		        mailSender.send(message);
+		    } catch (MessagingException e) {
+		        throw new MailParseException(e);
+		    }finally {
+		        if(result !="success"){
+		            result="fail";
+		        }
+		    }
+
 	}
 	public String deleteEvent(String eventId) {
 		inviteeService.deleteInvitees(eventId);

@@ -18,5 +18,9 @@ public class FileTestServiceImple implements FileTestService{
 		// TODO Auto-generated method stub
 		return dao.getImage();
 	}
+	public String sendEmail() {
+		return dao.sendEmail();
+		
+	}
 
 }
