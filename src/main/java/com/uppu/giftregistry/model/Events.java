@@ -10,6 +10,13 @@ public class Events {
 	private String eventDate;
 	private String username;
 	private String eventMsg;
+	private boolean host;
+	public boolean isHost() {
+		return host;
+	}
+	public void setHost(boolean host) {
+		this.host = host;
+	}
 	public String getEventMsg() {
 		return eventMsg;
 	}

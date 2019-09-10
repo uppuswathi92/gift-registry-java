@@ -1,5 +1,6 @@
 package com.uppu.giftregistry.controller;
 
+import java.io.IOException;
 import java.util.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.uppu.giftregistry.model.Events;
 import com.uppu.giftregistry.service.EventsService;
@@ -109,5 +111,29 @@ public class EventsController {
 		notifcation.put("results", "updated");
 		eventsService.updateNotifications(username);
 		return notifcation;
+	}
+	@GetMapping(path = { "/getRsvp/{eventId}/{username}"})
+	public HashMap<String, Object> getRsvp(@PathVariable("eventId") String eventId, @PathVariable("username") String username) {
+		HashMap<String, Object> rsvp = new HashMap<String, Object>();
+		String rsvpInfo = inviteeService.getRsvp(eventId, username);
+		rsvp.put("service", "getRsvp");
+		rsvp.put("results", rsvpInfo);
+		return rsvp;
+	}
+	@RequestMapping(method = RequestMethod.POST, path = "updateRsvp/{eventId}/{username}/{status}")
+	public HashMap<String, Object> updateRsvp(@PathVariable String eventId, @PathVariable String username, @PathVariable String status) {
+		HashMap<String, Object> rsvp = new HashMap<String, Object>();
+		rsvp.put("service", "updateRsvp");
+		String response  = inviteeService.updateRsvp(eventId, username, status);
+		rsvp.put("results", response);
+		return rsvp;
+	}
+	@GetMapping(path = { "/getUpcomingEvents/{username}" })
+	public HashMap<String, Object> getUpcomingEvents(@PathVariable("username") String username) {
+		HashMap<String, Object> eventDetails = new HashMap<String, Object>();
+		List<Events> events = eventsService.getUpcomingEvents(username);
+		eventDetails.put("service", "getUpcomingEvents");
+		eventDetails.put("results", events);
+		return eventDetails;
 	}
 }

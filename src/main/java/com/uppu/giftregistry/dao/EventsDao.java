@@ -12,4 +12,5 @@ public interface EventsDao {
 	String deleteEvent(String eventId);
 	int eventNotifications(String username);
 	String updateNotifications(String username);
+	List<Events> getUpcomingEvents(String username);
 }

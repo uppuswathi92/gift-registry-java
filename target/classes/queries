@@ -9,3 +9,4 @@ INSERT into demo.invitees (eventId, inviteeName, isHost) VALUES('56629', 'user1'
 SET SQL_SAFE_UPDATES = 0;
 UPDATE demo.products set isPurchased = 0, purchasedBy=null where productId = '64893';
 update demo.inviteed set notified='no' where isHost=0;
+ALTER TABLE invitees ADD COLUMN rsvp varchar(32);

@@ -43,4 +43,9 @@ public class EventsServiceImpl implements EventsService{
 		// TODO Auto-generated method stub
 		return eventsDao.updateNotifications(username);
 	}
+
+	public List<Events> getUpcomingEvents(String username) {
+		// TODO Auto-generated method stub
+		return eventsDao.getUpcomingEvents(username);
+	}
 }

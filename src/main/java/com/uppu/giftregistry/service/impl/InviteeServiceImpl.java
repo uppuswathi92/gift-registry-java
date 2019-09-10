@@ -31,5 +31,21 @@ public class InviteeServiceImpl implements InviteeService{
 		// TODO Auto-generated method stub
 		return inviteeDao.deleteInviteeByName(username, eventId);
 	}
+	public void sendEmailNotification(String eventId, String status, String emailId, String rsvp) {
+		// TODO Auto-generated method stub
+		inviteeDao.sendEmailNotification(eventId, status, emailId, rsvp);
+	}
+	public String getEmailIdByUsername(String username) {
+		// TODO Auto-generated method stub
+		return inviteeDao.getEmailIdByUsername(username);
+	}
+	public String getRsvp(String eventId, String username) {
+		// TODO Auto-generated method stub
+		return inviteeDao.getRsvp(eventId, username);
+	}
+	public String updateRsvp(String eventId, String username, String status) {
+		// TODO Auto-generated method stub
+		return inviteeDao.updateRsvp(eventId, username, status);
+	}
 
 }

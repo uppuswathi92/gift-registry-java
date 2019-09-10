@@ -3,10 +3,14 @@ package com.uppu.giftregistry.dao.impl;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.Date;
 import java.sql.Types;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
 import javax.mail.MessagingException;
@@ -90,11 +94,14 @@ public class EventsDaoImpl extends JdbcDaoSupport implements EventsDao {
 		List<Events> events = new ArrayList<Events>();
 		List<String> eventIds = inviteeService.getEventIdsByUsername(username, isHost);
 		//System.out.println(eventIds.get(0));
+		String check = "";
 		for(String eventId: eventIds) {
 			String eventsQuery =  "select * from events where eventId='"+eventId+"'";
 			List<Map<String, Object>> rows = getJdbcTemplate().queryForList(eventsQuery);
 			//System.out.println(rows.size());
+			
 			for(Map<String, Object> row:rows){
+				check = (String)row.get("eventDateTime");
 				Events event = new Events((String)row.get("eventId"), (String)row.get("eventName"), (String)row.get("eventAddress"), (String)row.get("eventDateTime"), username, (String)row.get("eventMsg"));
 				events.add(event);
 			}
@@ -120,22 +127,42 @@ public class EventsDaoImpl extends JdbcDaoSupport implements EventsDao {
 		int[] types = {Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR};
 		int rows = getJdbcTemplate().update(updateSql, params, types);
 		//System.out.println(rows + " row(s) updated.");
-		sendEventUpdateEmail(event.getEventId());
+		if(rows > 0) {
+			sendUpdates(event.getEventId());
+			//inviteeService.sendEmailNotification(event.getEventId(), "updateevent", "");
+		}
 		return null;
 	}
 	
+	public void sendUpdates(String eventId) {
+		String inviteeQuery = "select inviteeName from invitees where eventId='"+eventId +"' and isHost=0";
+		List<String> invitees = new ArrayList<String>();
+		List<String> inviteesEmail = new ArrayList<String>();
+		List<Map<String, Object>> rows = getJdbcTemplate().queryForList(inviteeQuery);
+		for(Map<String, Object> row:rows){
+			invitees.add((String)row.get("inviteeName"));
+		}
+		for(String username: invitees) {
+			String email = inviteeService.getEmailIdByUsername(username);
+			inviteesEmail.add(email);
+		}
+		for(String email: inviteesEmail) {
+			inviteeService.sendEmailNotification(eventId, "updateevent", email, "");
+		}
+	}
 	public void sendEventUpdateEmail(String eventId) {
-		 String result =null;
+		/* String result =null;
 		    MimeMessage message =mailSender.createMimeMessage();
 		    try {
 		        MimeMessageHelper helper = new MimeMessageHelper(message, false, "utf-8");
 		        String header = "";
 		        String footer = "";
+		        String contentMsg = "";
 		        String htmlMsg = "";
 		        String redirectUrl = "http://localhost:4200/viewevent?eventId="+eventId + "&event=other";
 		        String content = "<div align='center' style='line-height: 24px;'>";
-		        content += "<a href='"+redirectUrl + "' target='_blank' class='btn btn-primary block-center'>";
-		        content += "Click here to check it out!\r\n" + 
+		        content += "<a href='"+redirectUrl + "' target='_blank' class='btn btn-primary block-center' style='background-color: #007bff;border-radius: 5px;color: white;padding: .5em;text-decoration: none;'>";
+		        content += "<font face=\"Arial, Helvetica, sans-serif\" size=\"3\">Click here to check it out!</font>" + 
 		        		"    </a>\r\n" + 
 		        		"</div>\r\n" + 
 		        		"<div style='height: 60px; line-height: 60px; font-size: 10px;'></div>";
@@ -144,16 +171,18 @@ public class EventsDaoImpl extends JdbcDaoSupport implements EventsDao {
 		        		"                                                            click\r\n" + 
 		        		"                                                        </a>\r\n" + 
 		        		"                                                    </div>\r\n" + 
-		        		"                                                    <div style=\"height: 60px; line-height: 60px; font-size: 10px;\"></div>";*/
+		        		"                                                    <div style=\"height: 60px; line-height: 60px; font-size: 10px;\"></div>";
 				try {
 					File file = new ClassPathResource("templates/email/header-template.html").getFile();
 					header = new String(Files.readAllBytes(file.toPath()));
 					file = new ClassPathResource("templates/email/footer-template.html").getFile();
 					footer = new String(Files.readAllBytes(file.toPath()));
+					file = new ClassPathResource("templates/email/content-template.html").getFile();
+					contentMsg = new String(Files.readAllBytes(file.toPath()));
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
-				htmlMsg = header + content + footer; 
+				htmlMsg = header + contentMsg + content + footer; 
 		        message.setContent(htmlMsg, "text/html");
 		        helper.setTo("uppuswathi92@gmail.com");
 		        helper.setSubject("subject");
@@ -165,7 +194,7 @@ public class EventsDaoImpl extends JdbcDaoSupport implements EventsDao {
 		        if(result !="success"){
 		            result="fail";
 		        }
-		    }
+		    }*/
 
 	}
 	public String deleteEvent(String eventId) {
@@ -189,5 +218,46 @@ public class EventsDaoImpl extends JdbcDaoSupport implements EventsDao {
 		int rows = getJdbcTemplate().update(updateSql, params, types);
 		//System.out.println(rows + " row(s) updated.");
 		return null;
+	}
+	
+	public List<Events> getUpcomingEvents(String username){
+		List<Events> events = new ArrayList<Events>();
+		List<Events> myEvents = getEvents(username, "1");
+		for(Events event: myEvents) {
+			String eventDate = event.getEventDate().split(" at ")[0];
+		    Date eDate;
+		    Date currentDate = new Date();
+			try {
+				eDate = new SimpleDateFormat("MM-dd-yyyy").parse(eventDate);
+				long diffInMillies = eDate.getTime() - currentDate.getTime();
+			    long diff = TimeUnit.DAYS.convert(diffInMillies, TimeUnit.MILLISECONDS);
+			    if(diff <= 7 && diff >= 0) {
+			    	event.setHost(true);
+			    	events.add(event);
+			    }
+			} catch (ParseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		List<Events> otherEvents = getEvents(username, "0");
+		for(Events event: otherEvents) {
+			String eventDate = event.getEventDate().split(" at ")[0];
+		    Date eDate;
+		    Date currentDate = new Date();
+			try {
+				eDate = new SimpleDateFormat("MM-dd-yyyy").parse(eventDate);
+				long diffInMillies = Math.abs(eDate.getTime() - currentDate.getTime());
+			    long diff = TimeUnit.DAYS.convert(diffInMillies, TimeUnit.MILLISECONDS);
+			    if(diff <= 7 && diff >= 0) {
+			    	event.setHost(false);
+			    	events.add(event);
+			    }
+			} catch (ParseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		return events;
 	}
 }
