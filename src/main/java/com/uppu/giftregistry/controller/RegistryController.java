@@ -1,14 +1,10 @@
 package com.uppu.giftregistry.controller;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,8 +13,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import com.uppu.giftregistry.model.Invitee;
 import com.uppu.giftregistry.model.RegistryUser;
 import com.uppu.giftregistry.service.InviteeService;
 import com.uppu.giftregistry.service.LoginService;
@@ -35,7 +29,7 @@ public class RegistryController {
 	LoginService loginService;
 	@Autowired
 	InviteeService inviteeService;
-	private List<RegistryUser> users = createList();
+	//private List<RegistryUser> users = createList();
 
 	@GetMapping(produces = "application/json")
 	public HashMap<String, Object> getUsers() {
@@ -46,7 +40,7 @@ public class RegistryController {
 		return userDetails;
 	}
 
-	@DeleteMapping(path = { "/{username}" })
+	/*@DeleteMapping(path = { "/{username}" })
 	public RegistryUser delete(@PathVariable("username") int username) {
 		RegistryUser deletedUser = null;
 		for (RegistryUser user : users) {
@@ -57,13 +51,15 @@ public class RegistryController {
 			}
 		}
 		return deletedUser;
-	}
+	}*/
 
 	@PostMapping
-	public RegistryUser create(@RequestBody RegistryUser user) {
-		users.add(user);
+	public HashMap<String, Object> create(@RequestBody RegistryUser user) {
+		HashMap<String, Object> userDetails = new HashMap<String, Object>();
+		userDetails.put("service", "register");
 		userService.addUser(user);
-		return user;
+		userDetails.put("results", "registered");
+		return userDetails;
 	}
 	
 	@GetMapping(path = { "/{username}/{password}" })
@@ -82,30 +78,14 @@ public class RegistryController {
 		addInvitees.put("service", "addInvitees");
 		addInvitees.put("results", null);
 		return addInvitees;
-		//System.out.println(idNumber);
-		//return null;
-	}
-	private static List<RegistryUser> createList() {
-		
-		List<RegistryUser> tempUsers = new ArrayList<RegistryUser>();
-		RegistryUser user1 = new RegistryUser();
-		user1.setUsername("user1");
-		user1.setPassword("user1");
-		user1.setEmail("user1@gmail.com");
-		user1.setFirstName("user1first");
-		user1.setLastName("user1lastname");
-		user1.setPhoneNumber("9132036853");
-
-		RegistryUser user2 = new RegistryUser();
-		user2.setUsername("user2");
-		user2.setPassword("user2");
-		user2.setEmail("user2@gmail.com");
-		user2.setFirstName("user2first");
-		user2.setLastName("user2lastname");
-		user2.setPhoneNumber("9132036853");
-		tempUsers.add(user1);
-		tempUsers.add(user2);
-		return tempUsers;
 	}
 	
+	@GetMapping(path = { "userExists/{username}/{email}" })
+	public HashMap<String, Object> userExists(@PathVariable("username") String username, @PathVariable("email") String email) {
+		HashMap<String, Object> userDetails = new HashMap<String, Object>();
+		userDetails.put("service", "userExists");
+		boolean exists = userService.userExists(username, email);
+		userDetails.put("results", exists);
+		return userDetails;
+	}
 }

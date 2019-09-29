@@ -48,7 +48,9 @@ public class InviteeDaoImpl extends JdbcDaoSupport implements InviteeDao{
 				eventId, username, isHost,notified,rsvp
 		});
 		String emailId = getEmailIdByUsername(username);
-		sendEmailNotification(eventId, "newevent", emailId, "");
+		if(!isHost) {
+			sendEmailNotification(eventId, "newevent", emailId, "");
+		}
 		return null;
 	}
 	

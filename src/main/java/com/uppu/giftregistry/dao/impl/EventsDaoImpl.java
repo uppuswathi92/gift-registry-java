@@ -1,8 +1,5 @@
 package com.uppu.giftregistry.dao.impl;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
 import java.util.Date;
 import java.sql.Types;
 import java.text.ParseException;
@@ -11,24 +8,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-
 import javax.annotation.PostConstruct;
-import javax.mail.MessagingException;
-import javax.mail.internet.MimeMessage;
 import javax.sql.DataSource;
-
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.support.JdbcDaoSupport;
-import org.springframework.mail.MailParseException;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Repository;
-
 import com.uppu.giftregistry.dao.EventsDao;
 import com.uppu.giftregistry.model.Events;
-import com.uppu.giftregistry.model.RegistryUser;
 import com.uppu.giftregistry.service.InviteeService;
 import com.uppu.giftregistry.service.ProductsService;
 
@@ -44,8 +31,6 @@ public class EventsDaoImpl extends JdbcDaoSupport implements EventsDao {
 	InviteeService inviteeService;
 	@Autowired
 	ProductsService productsService;
-	@Autowired
-    private JavaMailSender mailSender;
 	@PostConstruct
 	private void initialize(){
 		setDataSource(dataSource);
@@ -63,7 +48,6 @@ public class EventsDaoImpl extends JdbcDaoSupport implements EventsDao {
 	}
 	
 	public String getEventId() {
-		List<String> eventIds = getEventIds();
 		String eventId = "" + Math.round((Math.random()) *100000);
 		while(!isValidEventId(eventId)) {
 			eventId = "" + Math.round((Math.random()) *100000);
@@ -93,15 +77,10 @@ public class EventsDaoImpl extends JdbcDaoSupport implements EventsDao {
 	public List<Events> getEvents(String username, String isHost) {
 		List<Events> events = new ArrayList<Events>();
 		List<String> eventIds = inviteeService.getEventIdsByUsername(username, isHost);
-		//System.out.println(eventIds.get(0));
-		String check = "";
 		for(String eventId: eventIds) {
 			String eventsQuery =  "select * from events where eventId='"+eventId+"'";
 			List<Map<String, Object>> rows = getJdbcTemplate().queryForList(eventsQuery);
-			//System.out.println(rows.size());
-			
 			for(Map<String, Object> row:rows){
-				check = (String)row.get("eventDateTime");
 				Events event = new Events((String)row.get("eventId"), (String)row.get("eventName"), (String)row.get("eventAddress"), (String)row.get("eventDateTime"), username, (String)row.get("eventMsg"));
 				events.add(event);
 			}
@@ -122,14 +101,11 @@ public class EventsDaoImpl extends JdbcDaoSupport implements EventsDao {
 	}
 	public String updateEvent(Events event) {
 		String updateSql = "UPDATE events SET eventName = ?, eventAddress = ?, eventDateTime = ?, eventMsg= ?  WHERE eventId = ?";
-		//System.out.println(event.getEventName() + " " + event.getEventAddress() + " " + event.getEventDate() + " " + event.getEventMsg() + " " + event.getEventId());
 		Object[] params = { event.getEventName(), event.getEventAddress(), event.getEventDate(), event.getEventMsg(), event.getEventId()};
 		int[] types = {Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR};
 		int rows = getJdbcTemplate().update(updateSql, params, types);
-		//System.out.println(rows + " row(s) updated.");
 		if(rows > 0) {
 			sendUpdates(event.getEventId());
-			//inviteeService.sendEmailNotification(event.getEventId(), "updateevent", "");
 		}
 		return null;
 	}
@@ -150,53 +126,7 @@ public class EventsDaoImpl extends JdbcDaoSupport implements EventsDao {
 			inviteeService.sendEmailNotification(eventId, "updateevent", email, "");
 		}
 	}
-	public void sendEventUpdateEmail(String eventId) {
-		/* String result =null;
-		    MimeMessage message =mailSender.createMimeMessage();
-		    try {
-		        MimeMessageHelper helper = new MimeMessageHelper(message, false, "utf-8");
-		        String header = "";
-		        String footer = "";
-		        String contentMsg = "";
-		        String htmlMsg = "";
-		        String redirectUrl = "http://localhost:4200/viewevent?eventId="+eventId + "&event=other";
-		        String content = "<div align='center' style='line-height: 24px;'>";
-		        content += "<a href='"+redirectUrl + "' target='_blank' class='btn btn-primary block-center' style='background-color: #007bff;border-radius: 5px;color: white;padding: .5em;text-decoration: none;'>";
-		        content += "<font face=\"Arial, Helvetica, sans-serif\" size=\"3\">Click here to check it out!</font>" + 
-		        		"    </a>\r\n" + 
-		        		"</div>\r\n" + 
-		        		"<div style='height: 60px; line-height: 60px; font-size: 10px;'></div>";
-		        /*String content = "<div align=\"center\" style=\"line-height: 24px;\">\r\n" + 
-		        		"                                                        <a href=\"#\" target=\"_blank\" class=\"btn btn-danger block-center\">\r\n" + 
-		        		"                                                            click\r\n" + 
-		        		"                                                        </a>\r\n" + 
-		        		"                                                    </div>\r\n" + 
-		        		"                                                    <div style=\"height: 60px; line-height: 60px; font-size: 10px;\"></div>";
-				try {
-					File file = new ClassPathResource("templates/email/header-template.html").getFile();
-					header = new String(Files.readAllBytes(file.toPath()));
-					file = new ClassPathResource("templates/email/footer-template.html").getFile();
-					footer = new String(Files.readAllBytes(file.toPath()));
-					file = new ClassPathResource("templates/email/content-template.html").getFile();
-					contentMsg = new String(Files.readAllBytes(file.toPath()));
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-				htmlMsg = header + contentMsg + content + footer; 
-		        message.setContent(htmlMsg, "text/html");
-		        helper.setTo("uppuswathi92@gmail.com");
-		        helper.setSubject("subject");
-		        result="success";
-		        mailSender.send(message);
-		    } catch (MessagingException e) {
-		        throw new MailParseException(e);
-		    }finally {
-		        if(result !="success"){
-		            result="fail";
-		        }
-		    }*/
-
-	}
+	
 	public String deleteEvent(String eventId) {
 		inviteeService.deleteInvitees(eventId);
 		productsService.deleteProductByEvent(eventId);
@@ -215,8 +145,7 @@ public class EventsDaoImpl extends JdbcDaoSupport implements EventsDao {
 		String updateSql = "UPDATE invitees SET notified = ?  WHERE inviteeName = ?";
 		Object[] params = { "yes", username};
 		int[] types = {Types.VARCHAR, Types.VARCHAR};
-		int rows = getJdbcTemplate().update(updateSql, params, types);
-		//System.out.println(rows + " row(s) updated.");
+		getJdbcTemplate().update(updateSql, params, types);
 		return null;
 	}
 	
@@ -259,5 +188,13 @@ public class EventsDaoImpl extends JdbcDaoSupport implements EventsDao {
 			}
 		}
 		return events;
+	}
+	public boolean validateUserForEvent(String username, String eventId) {
+		String eventQuery = "select * from invitees where inviteeName='"+username+"' and eventId='"+eventId+"'";
+		List<Map<String, Object>> rows = getJdbcTemplate().queryForList(eventQuery);
+		if(rows.size() > 0) {
+			return true;
+		}
+		return false;
 	}
 }

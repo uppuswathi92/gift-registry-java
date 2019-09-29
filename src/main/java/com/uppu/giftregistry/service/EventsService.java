@@ -13,4 +13,5 @@ public interface EventsService {
 	int eventNotifications(String username);
 	String updateNotifications(String username);
 	List<Events> getUpcomingEvents(String username);
+	boolean validateUserForEvent(String username, String eventId);
 }

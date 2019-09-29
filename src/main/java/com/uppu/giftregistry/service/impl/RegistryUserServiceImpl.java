@@ -24,5 +24,9 @@ public class RegistryUserServiceImpl implements RegistryUserService{
 	public List<RegistryUser> getUsers() {
 		return userDao.getUsers();
 	}
+	public boolean userExists(String username, String email) {
+		// TODO Auto-generated method stub
+		return userDao.userExists(username, email);
+	}
 
 }

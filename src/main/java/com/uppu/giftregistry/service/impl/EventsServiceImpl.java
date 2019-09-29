@@ -48,4 +48,9 @@ public class EventsServiceImpl implements EventsService{
 		// TODO Auto-generated method stub
 		return eventsDao.getUpcomingEvents(username);
 	}
+
+	public boolean validateUserForEvent(String username, String eventId) {
+		// TODO Auto-generated method stub
+		return eventsDao.validateUserForEvent(username, eventId);
+	}
 }

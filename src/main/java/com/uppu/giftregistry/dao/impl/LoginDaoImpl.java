@@ -29,10 +29,12 @@ public class LoginDaoImpl extends JdbcDaoSupport implements LoginDao{
 	}
 	public String login(String username, String password) {
 		//System.out.println(username);
-		String loginSql = "select * from registryuser where username='"+username + "' and password= '" + password+"'";
+		String loginSql = "select * from registryuser where username='"+username + "'or email='"+username+"'"+ " and password= '" + password+"'";
 		List<Map<String, Object>> rows = getJdbcTemplate().queryForList(loginSql);
 		if(rows.size() == 1) {
-			return "success";
+			for(Map<String, Object> row:rows){
+				return (String)row.get("username");
+			}
 		}
 		return "failure";
 	}

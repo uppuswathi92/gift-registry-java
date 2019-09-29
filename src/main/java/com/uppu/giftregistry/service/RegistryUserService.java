@@ -9,4 +9,5 @@ import com.uppu.giftregistry.model.RegistryUser;
 public interface RegistryUserService {
 	String addUser(RegistryUser user);
 	List<RegistryUser> getUsers();
+	boolean userExists(String username, String email);
 }
