@@ -199,7 +199,7 @@ public class InviteeDaoImpl extends JdbcDaoSupport implements InviteeDao{
 		for(Map<String, Object> row:rows){
 			response = (String)row.get("rsvp");
 		}
-		return response;
+		return response +"-" + eventId;
 	}
 	
 	public String getHostusername(String eventId) {
